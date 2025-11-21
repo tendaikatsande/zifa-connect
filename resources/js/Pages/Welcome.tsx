@@ -1,48 +1,48 @@
 import { Head, Link } from '@inertiajs/react';
 import {
-    UsersIcon,
-    BuildingOfficeIcon,
-    ArrowsRightLeftIcon,
-    TrophyIcon,
-    ShieldCheckIcon,
-    CurrencyDollarIcon,
-    GlobeAltIcon,
-    DocumentCheckIcon,
-    ChartBarIcon,
-    UserGroupIcon,
-} from '@heroicons/react/24/outline';
+    Users,
+    Building2,
+    ArrowLeftRight,
+    Trophy,
+    ShieldCheck,
+    DollarSign,
+    Globe,
+    FileCheck,
+    BarChart3,
+    UsersRound,
+} from 'lucide-react';
 
 export default function Welcome() {
     const features = [
         {
             name: 'Player Registration',
             description: 'Digital registration for players across all age categories with document verification and medical tracking.',
-            icon: UsersIcon,
+            icon: Users,
         },
         {
             name: 'Club Management',
             description: 'Complete club lifecycle management including annual affiliations, roster control, and compliance monitoring.',
-            icon: BuildingOfficeIcon,
+            icon: Building2,
         },
         {
             name: 'Transfer System',
             description: 'Streamlined local and international transfers with automated workflows and FIFA TMS integration.',
-            icon: ArrowsRightLeftIcon,
+            icon: ArrowLeftRight,
         },
         {
             name: 'Competition Management',
             description: 'Organize leagues, cups, and tournaments with fixture generation, results tracking, and standings.',
-            icon: TrophyIcon,
+            icon: Trophy,
         },
         {
             name: 'Officials & Referees',
             description: 'License management, training courses, and match assignments for coaches and referees.',
-            icon: ShieldCheckIcon,
+            icon: ShieldCheck,
         },
         {
             name: 'Payment Processing',
             description: 'Integrated PesePay payments for registrations, affiliations, transfers, and fines.',
-            icon: CurrencyDollarIcon,
+            icon: DollarSign,
         },
     ];
 
@@ -218,19 +218,19 @@ export default function Welcome() {
                                 <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 border border-gray-200">
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="bg-white rounded-lg p-4 shadow-sm">
-                                            <GlobeAltIcon className="h-8 w-8 text-primary-600 mb-2" />
+                                            <Globe className="h-8 w-8 text-primary-600 mb-2" />
                                             <div className="text-sm font-medium text-gray-900">Global Sync</div>
                                         </div>
                                         <div className="bg-white rounded-lg p-4 shadow-sm">
-                                            <DocumentCheckIcon className="h-8 w-8 text-primary-600 mb-2" />
+                                            <FileCheck className="h-8 w-8 text-primary-600 mb-2" />
                                             <div className="text-sm font-medium text-gray-900">Compliance</div>
                                         </div>
                                         <div className="bg-white rounded-lg p-4 shadow-sm">
-                                            <ChartBarIcon className="h-8 w-8 text-primary-600 mb-2" />
+                                            <BarChart3 className="h-8 w-8 text-primary-600 mb-2" />
                                             <div className="text-sm font-medium text-gray-900">Analytics</div>
                                         </div>
                                         <div className="bg-white rounded-lg p-4 shadow-sm">
-                                            <UserGroupIcon className="h-8 w-8 text-primary-600 mb-2" />
+                                            <UsersRound className="h-8 w-8 text-primary-600 mb-2" />
                                             <div className="text-sm font-medium text-gray-900">Identity</div>
                                         </div>
                                     </div>

@@ -1,25 +1,19 @@
 import { PropsWithChildren, useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import {
-    HomeIcon,
-    UsersIcon,
-    BuildingOfficeIcon,
-    ArrowsRightLeftIcon,
-    TrophyIcon,
-    DocumentTextIcon,
-    CogIcon,
-    ChevronDownIcon,
-    Bars3Icon,
-    XMarkIcon,
-    BellIcon,
-    UserCircleIcon,
-} from '@heroicons/react/24/outline';
-import {
+    Home,
+    Users,
+    Building2,
+    ArrowLeftRight,
+    Trophy,
+    FileText,
+    Settings,
+    ChevronDown,
+    Menu,
+    X,
+    Bell,
+    CircleUser,
     Heart,
-    Newspaper,
-    Vote,
-    User,
-    Trophy as TrophyLucide,
 } from 'lucide-react';
 
 interface NavItem {
@@ -30,11 +24,11 @@ interface NavItem {
 }
 
 const navigation: NavItem[] = [
-    { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
+    { name: 'Dashboard', href: '/dashboard', icon: Home },
     {
         name: 'Players',
         href: '/players',
-        icon: UsersIcon,
+        icon: Users,
         children: [
             { name: 'All Players', href: '/players' },
             { name: 'Register Player', href: '/players/create' },
@@ -44,7 +38,7 @@ const navigation: NavItem[] = [
     {
         name: 'Clubs',
         href: '/clubs',
-        icon: BuildingOfficeIcon,
+        icon: Building2,
         children: [
             { name: 'All Clubs', href: '/clubs' },
             { name: 'Register Club', href: '/clubs/create' },
@@ -54,7 +48,7 @@ const navigation: NavItem[] = [
     {
         name: 'Transfers',
         href: '/transfers',
-        icon: ArrowsRightLeftIcon,
+        icon: ArrowLeftRight,
         children: [
             { name: 'All Transfers', href: '/transfers' },
             { name: 'New Transfer', href: '/transfers/create' },
@@ -64,7 +58,7 @@ const navigation: NavItem[] = [
     {
         name: 'Competitions',
         href: '/competitions',
-        icon: TrophyIcon,
+        icon: Trophy,
         children: [
             { name: 'All Competitions', href: '/competitions' },
             { name: 'Fixtures', href: '/competitions?tab=fixtures' },
@@ -74,7 +68,7 @@ const navigation: NavItem[] = [
     {
         name: 'Invoices',
         href: '/invoices',
-        icon: DocumentTextIcon,
+        icon: FileText,
         children: [
             { name: 'All Invoices', href: '/invoices' },
             { name: 'Pending', href: '/invoices?status=pending' },
@@ -92,7 +86,7 @@ const navigation: NavItem[] = [
             { name: 'Leaderboard', href: '/fan/leaderboard' },
         ],
     },
-    { name: 'Settings', href: '/settings', icon: CogIcon },
+    { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
 export default function AuthenticatedLayout({ children }: PropsWithChildren) {
@@ -144,12 +138,12 @@ export default function AuthenticatedLayout({ children }: PropsWithChildren) {
                         className="-m-2.5 p-2.5 text-gray-700 lg:hidden"
                         onClick={() => setSidebarOpen(true)}
                     >
-                        <Bars3Icon className="h-6 w-6" />
+                        <Menu className="h-6 w-6" />
                     </button>
 
                     <div className="flex flex-1 justify-end gap-x-4 lg:gap-x-6">
                         <button className="relative p-2 text-gray-400 hover:text-gray-500">
-                            <BellIcon className="h-6 w-6" />
+                            <Bell className="h-6 w-6" />
                             <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500" />
                         </button>
 
@@ -157,7 +151,7 @@ export default function AuthenticatedLayout({ children }: PropsWithChildren) {
                             <span className="hidden lg:block text-sm font-medium text-gray-700">
                                 {auth?.user?.name}
                             </span>
-                            <UserCircleIcon className="h-8 w-8 text-gray-400" />
+                            <CircleUser className="h-8 w-8 text-gray-400" />
                         </div>
                     </div>
                 </div>
@@ -190,7 +184,7 @@ function SidebarContent({
                 </Link>
                 {onClose && (
                     <button onClick={onClose} className="lg:hidden text-white">
-                        <XMarkIcon className="h-6 w-6" />
+                        <X className="h-6 w-6" />
                     </button>
                 )}
             </div>
@@ -207,7 +201,7 @@ function SidebarContent({
                                     >
                                         <item.icon className="h-5 w-5 shrink-0" />
                                         {item.name}
-                                        <ChevronDownIcon
+                                        <ChevronDown
                                             className={`ml-auto h-4 w-4 transition-transform ${
                                                 expandedItems.includes(item.name)
                                                     ? 'rotate-180'

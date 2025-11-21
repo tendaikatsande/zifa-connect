@@ -7,7 +7,7 @@ import Button from '@/Components/ui/Button';
 import Input from '@/Components/ui/Input';
 import Select from '@/Components/ui/Select';
 import Badge, { getStatusVariant } from '@/Components/ui/Badge';
-import { MagnifyingGlassIcon, PlusIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import { Search, Plus, ArrowRight } from 'lucide-react';
 
 interface Transfer {
     id: number;
@@ -79,7 +79,7 @@ export default function TransfersIndex({ transfers, filters = {} }: TransfersInd
                         </p>
                     </div>
                     <Button href="/transfers/create">
-                        <PlusIcon className="h-4 w-4 mr-2" />
+                        <Plus className="h-4 w-4 mr-2" />
                         New Transfer
                     </Button>
                 </div>
@@ -89,7 +89,7 @@ export default function TransfersIndex({ transfers, filters = {} }: TransfersInd
                         <div className="flex flex-col sm:flex-row gap-4">
                             <form onSubmit={(e) => { e.preventDefault(); router.get('/transfers', { search }); }} className="flex-1">
                                 <div className="relative">
-                                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                                     <Input
                                         type="search"
                                         placeholder="Search by reference..."
@@ -150,7 +150,7 @@ export default function TransfersIndex({ transfers, filters = {} }: TransfersInd
                                                     <span className="truncate max-w-20">
                                                         {transfer.from_club?.name || 'Free'}
                                                     </span>
-                                                    <ArrowRightIcon className="h-3 w-3 text-gray-400 flex-shrink-0" />
+                                                    <ArrowRight className="h-3 w-3 text-gray-400 flex-shrink-0" />
                                                     <span className="truncate max-w-20">
                                                         {transfer.to_club.name}
                                                     </span>

@@ -2,20 +2,17 @@ import { Head, Link } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/Card';
 import {
-    UsersIcon,
-    BuildingOfficeIcon,
-    ArrowsRightLeftIcon,
-    CurrencyDollarIcon,
-    DocumentCheckIcon,
-    ExclamationTriangleIcon,
-} from '@heroicons/react/24/outline';
-import {
+    Users,
+    Building2,
+    ArrowLeftRight,
+    DollarSign,
+    FileCheck,
+    TriangleAlert,
     Newspaper,
     Vote,
     Trophy,
     Heart,
     User,
-    ArrowRight,
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -43,37 +40,37 @@ export default function Dashboard({ stats }: DashboardProps) {
         {
             name: 'Total Players',
             value: defaultStats.total_players.toLocaleString(),
-            icon: UsersIcon,
+            icon: Users,
             color: 'bg-blue-100 text-blue-600',
         },
         {
             name: 'Active Clubs',
             value: defaultStats.active_clubs.toLocaleString(),
-            icon: BuildingOfficeIcon,
+            icon: Building2,
             color: 'bg-green-100 text-green-600',
         },
         {
             name: 'Pending Registrations',
             value: defaultStats.pending_registrations.toLocaleString(),
-            icon: DocumentCheckIcon,
+            icon: FileCheck,
             color: 'bg-yellow-100 text-yellow-600',
         },
         {
             name: 'Pending Transfers',
             value: defaultStats.pending_transfers.toLocaleString(),
-            icon: ArrowsRightLeftIcon,
+            icon: ArrowLeftRight,
             color: 'bg-purple-100 text-purple-600',
         },
         {
             name: 'Revenue (USD)',
             value: `$${defaultStats.total_revenue_usd.toLocaleString()}`,
-            icon: CurrencyDollarIcon,
+            icon: DollarSign,
             color: 'bg-primary-100 text-primary-600',
         },
         {
             name: 'Outstanding',
             value: `$${defaultStats.outstanding_invoices.toLocaleString()}`,
-            icon: ExclamationTriangleIcon,
+            icon: TriangleAlert,
             color: 'bg-red-100 text-red-600',
         },
     ];
