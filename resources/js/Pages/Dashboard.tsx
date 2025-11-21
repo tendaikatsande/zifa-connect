@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/Card';
 import {
@@ -9,6 +9,14 @@ import {
     DocumentCheckIcon,
     ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
+import {
+    Newspaper,
+    Vote,
+    Trophy,
+    Heart,
+    User,
+    ArrowRight,
+} from 'lucide-react';
 
 interface DashboardProps {
     stats?: {
@@ -129,6 +137,52 @@ export default function Dashboard({ stats }: DashboardProps) {
                         </CardContent>
                     </Card>
                 </div>
+
+                {/* Fan Zone Quick Links */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Heart className="h-5 w-5 text-red-500" />
+                            Fan Zone
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <Link
+                                href="/fan/news"
+                                className="flex flex-col items-center p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors group"
+                            >
+                                <Newspaper className="h-8 w-8 text-blue-600 mb-2" />
+                                <span className="text-sm font-medium text-gray-900">News</span>
+                                <span className="text-xs text-gray-500">Latest updates</span>
+                            </Link>
+                            <Link
+                                href="/fan/polls"
+                                className="flex flex-col items-center p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors group"
+                            >
+                                <Vote className="h-8 w-8 text-purple-600 mb-2" />
+                                <span className="text-sm font-medium text-gray-900">Polls</span>
+                                <span className="text-xs text-gray-500">Vote now</span>
+                            </Link>
+                            <Link
+                                href="/fan/leaderboard"
+                                className="flex flex-col items-center p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors group"
+                            >
+                                <Trophy className="h-8 w-8 text-yellow-600 mb-2" />
+                                <span className="text-sm font-medium text-gray-900">Leaderboard</span>
+                                <span className="text-xs text-gray-500">Top fans</span>
+                            </Link>
+                            <Link
+                                href="/fan/profile"
+                                className="flex flex-col items-center p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors group"
+                            >
+                                <User className="h-8 w-8 text-green-600 mb-2" />
+                                <span className="text-sm font-medium text-gray-900">Profile</span>
+                                <span className="text-xs text-gray-500">Your stats</span>
+                            </Link>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </AuthenticatedLayout>
     );

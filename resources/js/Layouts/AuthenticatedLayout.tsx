@@ -14,6 +14,13 @@ import {
     BellIcon,
     UserCircleIcon,
 } from '@heroicons/react/24/outline';
+import {
+    Heart,
+    Newspaper,
+    Vote,
+    User,
+    Trophy as TrophyLucide,
+} from 'lucide-react';
 
 interface NavItem {
     name: string;
@@ -72,6 +79,17 @@ const navigation: NavItem[] = [
             { name: 'All Invoices', href: '/invoices' },
             { name: 'Pending', href: '/invoices?status=pending' },
             { name: 'Overdue', href: '/invoices?status=overdue' },
+        ],
+    },
+    {
+        name: 'Fan Zone',
+        href: '/fan',
+        icon: Heart,
+        children: [
+            { name: 'News', href: '/fan/news' },
+            { name: 'Polls', href: '/fan/polls' },
+            { name: 'My Profile', href: '/fan/profile' },
+            { name: 'Leaderboard', href: '/fan/leaderboard' },
         ],
     },
     { name: 'Settings', href: '/settings', icon: CogIcon },
