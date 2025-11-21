@@ -17,6 +17,32 @@ class ClubController extends Controller
         private RegistrationService $registrationService
     ) {}
 
+    /**
+     * Check if user can modify this club (membership or admin role)
+     */
+    private function canModifyClub(Request $request, Club $club): bool
+    {
+        $user = $request->user();
+
+        // Super admins and ZIFA admins can modify any club
+        if ($user->hasRole('super_admin') || $user->hasRole('zifa_admin')) {
+            return true;
+        }
+
+        // User created this club
+        if ($club->created_by === $user->id) {
+            return true;
+        }
+
+        // User is an active official of this club
+        $isClubOfficial = $user->clubs()
+            ->where('clubs.id', $club->id)
+            ->wherePivot('status', 'active')
+            ->exists();
+
+        return $isClubOfficial;
+    }
+
     public function index(Request $request): JsonResponse
     {
         $query = Club::with(['region'])
@@ -75,6 +101,11 @@ class ClubController extends Controller
 
     public function update(Request $request, Club $club): JsonResponse
     {
+        // Check membership before allowing update
+        if (!$this->canModifyClub($request, $club)) {
+            return response()->json(['message' => 'Unauthorized to modify this club'], 403);
+        }
+
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'short_name' => 'nullable|string|max:50',
@@ -91,6 +122,11 @@ class ClubController extends Controller
 
     public function uploadDocument(Request $request, Club $club): JsonResponse
     {
+        // Check membership before allowing document upload
+        if (!$this->canModifyClub($request, $club)) {
+            return response()->json(['message' => 'Unauthorized to upload documents for this club'], 403);
+        }
+
         $request->validate([
             'type' => 'required|string|in:constitution,registration_certificate,proof_of_payment,logo,other',
             'file' => 'required|file|max:10240',
@@ -110,6 +146,11 @@ class ClubController extends Controller
 
     public function addOfficial(Request $request, Club $club): JsonResponse
     {
+        // Check membership before allowing official management
+        if (!$this->canModifyClub($request, $club)) {
+            return response()->json(['message' => 'Unauthorized to manage officials for this club'], 403);
+        }
+
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'position' => 'required|string|in:chairman,secretary,treasurer,admin,coach,medic',
@@ -137,6 +178,11 @@ class ClubController extends Controller
 
     public function renew(Request $request, Club $club): JsonResponse
     {
+        // Check membership before allowing renewal
+        if (!$this->canModifyClub($request, $club)) {
+            return response()->json(['message' => 'Unauthorized to renew this club'], 403);
+        }
+
         return DB::transaction(function () use ($club, $request) {
             $affiliation = $this->registrationService->createAffiliation($club);
             $invoice = $this->registrationService->createAffiliationInvoice($affiliation);
