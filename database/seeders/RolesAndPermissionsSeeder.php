@@ -130,24 +130,56 @@ class RolesAndPermissionsSeeder extends Seeder
         }
 
         // Create roles with permissions
+        // NOTE: Explicit permissions prevent auto-expansion when new permissions are added
         $roles = [
             'super_admin' => [
                 'description' => 'Full system access',
-                'permissions' => ['*'], // All permissions
+                'permissions' => ['*'], // All permissions - intentional for super admin only
             ],
             'zifa_admin' => [
                 'description' => 'ZIFA administrative staff',
                 'permissions' => [
-                    'players.*', 'clubs.*', 'transfers.*', 'finance.*',
-                    'competitions.*', 'officials.*', 'disciplinary.*',
-                    'registrations.*', 'funds.*', 'reports.*', 'fifa.*',
+                    // Players
+                    'players.view', 'players.view_any', 'players.create', 'players.update',
+                    'players.delete', 'players.approve', 'players.reject', 'players.upload_documents',
+                    // Clubs
+                    'clubs.view', 'clubs.view_any', 'clubs.create', 'clubs.update',
+                    'clubs.delete', 'clubs.approve', 'clubs.manage_officials', 'clubs.upload_documents',
+                    // Transfers
+                    'transfers.view', 'transfers.view_any', 'transfers.create',
+                    'transfers.approve_club', 'transfers.approve_zifa', 'transfers.reject',
+                    // Finance
+                    'invoices.view', 'invoices.view_any', 'invoices.create', 'invoices.cancel',
+                    'payments.initiate', 'payments.view',
+                    // Competitions
+                    'competitions.view', 'competitions.create', 'competitions.update', 'competitions.delete',
+                    'matches.view', 'matches.create', 'matches.manage',
+                    // Officials
+                    'officials.view', 'officials.create', 'officials.update',
+                    'referees.view', 'referees.create', 'referees.update',
+                    'courses.view', 'courses.create', 'courses.enroll',
+                    // Disciplinary
+                    'disciplinary.view', 'disciplinary.create', 'disciplinary.manage',
+                    // Registrations
+                    'registrations.view', 'registrations.approve', 'registrations.reject',
+                    // Funds
+                    'funds.view', 'funds.create', 'funds.disburse',
+                    // Reports
+                    'reports.dashboard', 'reports.financial', 'reports.registrations', 'reports.transfers',
+                    // FIFA
+                    'fifa.view_status', 'fifa.trigger_sync', 'fifa.view_mismatches',
                 ],
             ],
             'zifa_finance' => [
                 'description' => 'ZIFA finance department',
                 'permissions' => [
-                    'invoices.*', 'payments.*', 'reports.dashboard',
-                    'reports.financial', 'funds.view',
+                    // Finance - explicit permissions
+                    'invoices.view', 'invoices.view_any', 'invoices.create', 'invoices.cancel',
+                    'payments.initiate', 'payments.view',
+                    // Reports
+                    'reports.dashboard', 'reports.financial',
+                    // Funds - view only
+                    'funds.view',
                 ],
             ],
             'club_admin' => [
