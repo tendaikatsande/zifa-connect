@@ -6,15 +6,36 @@ use App\Http\Controllers\Controller;
 use App\Models\Transfer;
 use App\Models\Player;
 use App\Services\TransferService;
+use App\Traits\LogsAuthorizationDenials;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
 class TransferController extends Controller
 {
+    use LogsAuthorizationDenials;
+
     public function __construct(
         private TransferService $transferService
     ) {}
+
+    /**
+     * Check if user can manage transfers for this club
+     */
+    private function isClubOfficial(Request $request, int $clubId): bool
+    {
+        $user = $request->user();
+
+        // Super admins and ZIFA admins can manage all transfers
+        if ($user->hasRole('super_admin') || $user->hasRole('zifa_admin')) {
+            return true;
+        }
+
+        return $user->clubs()
+            ->where('clubs.id', $clubId)
+            ->wherePivot('status', 'active')
+            ->exists();
+    }
 
     public function index(Request $request): JsonResponse
     {
@@ -44,6 +65,12 @@ class TransferController extends Controller
         ]);
 
         $player = Player::findOrFail($validated['player_id']);
+
+        // Verify user is official of the receiving club (to_club)
+        if (!$this->isClubOfficial($request, $validated['to_club_id'])) {
+            $this->logResourceDenial($request, 'transfer', $validated['to_club_id'], 'initiate');
+            return response()->json(['message' => 'Unauthorized to initiate transfers for this club'], 403);
+        }
 
         // Validation checks
         if (!$player->isEligibleForTransfer()) {
@@ -93,9 +120,9 @@ class TransferController extends Controller
         }
 
         // Verify user belongs to from_club
-        $userClubs = $request->user()->clubs->pluck('id')->toArray();
-        if (!in_array($transfer->from_club_id, $userClubs)) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if (!$this->isClubOfficial($request, $transfer->from_club_id)) {
+            $this->logResourceDenial($request, 'transfer', $transfer->id, 'approve_club');
+            return response()->json(['message' => 'Unauthorized to approve transfers for this club'], 403);
         }
 
         $this->transferService->approveByClub($transfer, $request->user());

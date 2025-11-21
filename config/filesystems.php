@@ -12,6 +12,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Documents Disk
+    |--------------------------------------------------------------------------
+    |
+    | This disk is used for player and club document uploads.
+    | Set to 'minio' in production for S3-compatible storage.
+    |
+    */
+
+    'documents_disk' => env('DOCUMENTS_DISK', 'public'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Filesystem Disks
     |--------------------------------------------------------------------------
     */

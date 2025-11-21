@@ -8,6 +8,7 @@ use App\Models\PlayerDocument;
 use App\Models\Registration;
 use App\Models\Invoice;
 use App\Services\RegistrationService;
+use App\Traits\LogsAuthorizationDenials;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -15,9 +16,41 @@ use Illuminate\Support\Facades\Storage;
 
 class PlayerController extends Controller
 {
+    use LogsAuthorizationDenials;
     public function __construct(
         private RegistrationService $registrationService
     ) {}
+
+    /**
+     * Check if user can modify this player (ownership or admin role)
+     */
+    private function canModifyPlayer(Request $request, Player $player): bool
+    {
+        $user = $request->user();
+
+        // Super admins and ZIFA admins can modify any player
+        if ($user->hasRole('super_admin') || $user->hasRole('zifa_admin')) {
+            return true;
+        }
+
+        // User created this player
+        if ($player->created_by === $user->id) {
+            return true;
+        }
+
+        // User is an official of the player's current club
+        if ($player->current_club_id) {
+            $isClubOfficial = $user->clubs()
+                ->where('clubs.id', $player->current_club_id)
+                ->wherePivot('status', 'active')
+                ->exists();
+            if ($isClubOfficial) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     public function index(Request $request): JsonResponse
     {
@@ -103,6 +136,12 @@ class PlayerController extends Controller
 
     public function update(Request $request, Player $player): JsonResponse
     {
+        // Check ownership/membership before allowing update
+        if (!$this->canModifyPlayer($request, $player)) {
+            $this->logResourceDenial($request, 'player', $player->id, 'update');
+            return response()->json(['message' => 'Unauthorized to modify this player'], 403);
+        }
+
         if (!in_array($player->status, ['draft', 'rejected'])) {
             return response()->json(['message' => 'Cannot edit player in current status'], 422);
         }
@@ -127,8 +166,14 @@ class PlayerController extends Controller
         return response()->json($player);
     }
 
-    public function destroy(Player $player): JsonResponse
+    public function destroy(Request $request, Player $player): JsonResponse
     {
+        // Check ownership/membership before allowing delete
+        if (!$this->canModifyPlayer($request, $player)) {
+            $this->logResourceDenial($request, 'player', $player->id, 'delete');
+            return response()->json(['message' => 'Unauthorized to delete this player'], 403);
+        }
+
         if ($player->status !== 'draft') {
             return response()->json(['message' => 'Can only delete draft players'], 422);
         }
@@ -140,6 +185,12 @@ class PlayerController extends Controller
 
     public function uploadDocument(Request $request, Player $player): JsonResponse
     {
+        // Check ownership/membership before allowing document upload
+        if (!$this->canModifyPlayer($request, $player)) {
+            $this->logResourceDenial($request, 'player', $player->id, 'upload_document');
+            return response()->json(['message' => 'Unauthorized to upload documents for this player'], 403);
+        }
+
         $request->validate([
             'type' => 'required|string|in:birth_certificate,national_id,passport,photo,medical,contract',
             'file' => [
@@ -180,15 +231,16 @@ class PlayerController extends Controller
             $extension
         );
 
+        $disk = config('filesystems.documents_disk', 'public');
         $path = $file->storeAs(
             "players/{$player->id}/documents",
             $secureFilename,
-            'public'
+            $disk
         );
 
         $document = $player->documents()->create([
             'type' => $request->type,
-            'file_url' => Storage::url($path),
+            'file_url' => Storage::disk($disk)->url($path),
             'file_name' => $file->getClientOriginalName(),
             'file_size' => $file->getSize(),
         ]);
@@ -198,6 +250,12 @@ class PlayerController extends Controller
 
     public function submit(Request $request, Player $player): JsonResponse
     {
+        // Check ownership/membership before allowing submission
+        if (!$this->canModifyPlayer($request, $player)) {
+            $this->logResourceDenial($request, 'player', $player->id, 'submit');
+            return response()->json(['message' => 'Unauthorized to submit this player'], 403);
+        }
+
         if ($player->status !== 'draft') {
             return response()->json(['message' => 'Can only submit draft players'], 422);
         }

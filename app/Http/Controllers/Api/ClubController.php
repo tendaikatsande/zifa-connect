@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Club;
 use App\Models\ClubDocument;
 use App\Services\RegistrationService;
+use App\Traits\LogsAuthorizationDenials;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -13,9 +14,36 @@ use Illuminate\Support\Facades\Storage;
 
 class ClubController extends Controller
 {
+    use LogsAuthorizationDenials;
     public function __construct(
         private RegistrationService $registrationService
     ) {}
+
+    /**
+     * Check if user can modify this club (membership or admin role)
+     */
+    private function canModifyClub(Request $request, Club $club): bool
+    {
+        $user = $request->user();
+
+        // Super admins and ZIFA admins can modify any club
+        if ($user->hasRole('super_admin') || $user->hasRole('zifa_admin')) {
+            return true;
+        }
+
+        // User created this club
+        if ($club->created_by === $user->id) {
+            return true;
+        }
+
+        // User is an active official of this club
+        $isClubOfficial = $user->clubs()
+            ->where('clubs.id', $club->id)
+            ->wherePivot('status', 'active')
+            ->exists();
+
+        return $isClubOfficial;
+    }
 
     public function index(Request $request): JsonResponse
     {
@@ -75,6 +103,12 @@ class ClubController extends Controller
 
     public function update(Request $request, Club $club): JsonResponse
     {
+        // Check membership before allowing update
+        if (!$this->canModifyClub($request, $club)) {
+            $this->logResourceDenial($request, 'club', $club->id, 'update');
+            return response()->json(['message' => 'Unauthorized to modify this club'], 403);
+        }
+
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'short_name' => 'nullable|string|max:50',
@@ -91,16 +125,23 @@ class ClubController extends Controller
 
     public function uploadDocument(Request $request, Club $club): JsonResponse
     {
+        // Check membership before allowing document upload
+        if (!$this->canModifyClub($request, $club)) {
+            $this->logResourceDenial($request, 'club', $club->id, 'upload_document');
+            return response()->json(['message' => 'Unauthorized to upload documents for this club'], 403);
+        }
+
         $request->validate([
             'type' => 'required|string|in:constitution,registration_certificate,proof_of_payment,logo,other',
             'file' => 'required|file|max:10240',
         ]);
 
-        $path = $request->file('file')->store("clubs/{$club->id}/documents", 'public');
+        $disk = config('filesystems.documents_disk', 'public');
+        $path = $request->file('file')->store("clubs/{$club->id}/documents", $disk);
 
         $document = $club->documents()->create([
             'type' => $request->type,
-            'file_url' => Storage::url($path),
+            'file_url' => Storage::disk($disk)->url($path),
             'file_name' => $request->file('file')->getClientOriginalName(),
             'file_size' => $request->file('file')->getSize(),
         ]);
@@ -110,6 +151,12 @@ class ClubController extends Controller
 
     public function addOfficial(Request $request, Club $club): JsonResponse
     {
+        // Check membership before allowing official management
+        if (!$this->canModifyClub($request, $club)) {
+            $this->logResourceDenial($request, 'club', $club->id, 'manage_officials');
+            return response()->json(['message' => 'Unauthorized to manage officials for this club'], 403);
+        }
+
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'position' => 'required|string|in:chairman,secretary,treasurer,admin,coach,medic',
@@ -137,6 +184,12 @@ class ClubController extends Controller
 
     public function renew(Request $request, Club $club): JsonResponse
     {
+        // Check membership before allowing renewal
+        if (!$this->canModifyClub($request, $club)) {
+            $this->logResourceDenial($request, 'club', $club->id, 'renew');
+            return response()->json(['message' => 'Unauthorized to renew this club'], 403);
+        }
+
         return DB::transaction(function () use ($club, $request) {
             $affiliation = $this->registrationService->createAffiliation($club);
             $invoice = $this->registrationService->createAffiliationInvoice($affiliation);
