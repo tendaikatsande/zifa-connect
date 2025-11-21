@@ -21,20 +21,35 @@ class PlayerController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = Player::with(['currentClub', 'creator'])
-            ->when($request->search, fn($q, $search) =>
-                $q->where('first_name', 'ilike', "%{$search}%")
-                  ->orWhere('last_name', 'ilike', "%{$search}%")
-                  ->orWhere('zifa_id', 'ilike', "%{$search}%")
-            )
-            ->when($request->status, fn($q, $status) => $q->where('status', $status))
-            ->when($request->club_id, fn($q, $clubId) => $q->where('current_club_id', $clubId))
-            ->when($request->category, fn($q, $cat) => $q->where('registration_category', $cat))
-            ->orderBy($request->sort ?? 'created_at', $request->order ?? 'desc');
+        // Validate input to prevent injection
+        $validated = $request->validate([
+            'search' => 'nullable|string|max:255',
+            'status' => 'nullable|string|in:draft,submitted,under_review,approved,rejected',
+            'club_id' => 'nullable|integer|exists:clubs,id',
+            'category' => 'nullable|string|max:100',
+            'sort' => 'nullable|string|in:created_at,first_name,last_name,zifa_id',
+            'order' => 'nullable|string|in:asc,desc',
+            'per_page' => 'nullable|integer|min:1|max:100',
+        ]);
 
-        $players = $request->per_page
-            ? $query->paginate($request->per_page)
-            : $query->get();
+        $query = Player::with(['currentClub', 'creator'])
+            ->when($validated['search'] ?? null, function ($q, $search) {
+                // Use parameterized queries to prevent SQL injection
+                $searchTerm = '%' . $search . '%';
+                return $q->where(function ($query) use ($searchTerm) {
+                    $query->where('first_name', 'ilike', $searchTerm)
+                          ->orWhere('last_name', 'ilike', $searchTerm)
+                          ->orWhere('zifa_id', 'ilike', $searchTerm);
+                });
+            })
+            ->when($validated['status'] ?? null, fn($q, $status) => $q->where('status', $status))
+            ->when($validated['club_id'] ?? null, fn($q, $clubId) => $q->where('current_club_id', $clubId))
+            ->when($validated['category'] ?? null, fn($q, $cat) => $q->where('registration_category', $cat))
+            ->orderBy($validated['sort'] ?? 'created_at', $validated['order'] ?? 'desc');
+
+        // Enforce pagination limits to prevent DoS
+        $perPage = min($validated['per_page'] ?? 25, 100);
+        $players = $query->paginate($perPage);
 
         return response()->json($players);
     }
@@ -127,16 +142,55 @@ class PlayerController extends Controller
     {
         $request->validate([
             'type' => 'required|string|in:birth_certificate,national_id,passport,photo,medical,contract',
-            'file' => 'required|file|max:10240', // 10MB max
+            'file' => [
+                'required',
+                'file',
+                'max:10240', // 10MB max
+                'mimes:pdf,jpg,jpeg,png,doc,docx', // Allowed file types
+                'mimetypes:application/pdf,image/jpeg,image/png,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            ],
         ]);
 
-        $path = $request->file('file')->store("players/{$player->id}/documents", 'public');
+        $file = $request->file('file');
+
+        // Additional security: check file extension matches content
+        $extension = strtolower($file->getClientOriginalExtension());
+        $mimeType = $file->getMimeType();
+
+        $allowedMimes = [
+            'pdf' => 'application/pdf',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'doc' => 'application/msword',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ];
+
+        if (!isset($allowedMimes[$extension]) || $allowedMimes[$extension] !== $mimeType) {
+            return response()->json([
+                'message' => 'File extension does not match content type',
+            ], 422);
+        }
+
+        // Generate secure filename to prevent path traversal
+        $secureFilename = sprintf(
+            '%s_%s.%s',
+            $request->type,
+            now()->format('YmdHis'),
+            $extension
+        );
+
+        $path = $file->storeAs(
+            "players/{$player->id}/documents",
+            $secureFilename,
+            'public'
+        );
 
         $document = $player->documents()->create([
             'type' => $request->type,
             'file_url' => Storage::url($path),
-            'file_name' => $request->file('file')->getClientOriginalName(),
-            'file_size' => $request->file('file')->getSize(),
+            'file_name' => $file->getClientOriginalName(),
+            'file_size' => $file->getSize(),
         ]);
 
         return response()->json($document, 201);
