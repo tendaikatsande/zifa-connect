@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Club;
 use App\Models\ClubDocument;
 use App\Services\RegistrationService;
+use App\Traits\LogsAuthorizationDenials;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Storage;
 
 class ClubController extends Controller
 {
+    use LogsAuthorizationDenials;
     public function __construct(
         private RegistrationService $registrationService
     ) {}
@@ -103,6 +105,7 @@ class ClubController extends Controller
     {
         // Check membership before allowing update
         if (!$this->canModifyClub($request, $club)) {
+            $this->logResourceDenial($request, 'club', $club->id, 'update');
             return response()->json(['message' => 'Unauthorized to modify this club'], 403);
         }
 
@@ -124,6 +127,7 @@ class ClubController extends Controller
     {
         // Check membership before allowing document upload
         if (!$this->canModifyClub($request, $club)) {
+            $this->logResourceDenial($request, 'club', $club->id, 'upload_document');
             return response()->json(['message' => 'Unauthorized to upload documents for this club'], 403);
         }
 
@@ -148,6 +152,7 @@ class ClubController extends Controller
     {
         // Check membership before allowing official management
         if (!$this->canModifyClub($request, $club)) {
+            $this->logResourceDenial($request, 'club', $club->id, 'manage_officials');
             return response()->json(['message' => 'Unauthorized to manage officials for this club'], 403);
         }
 
@@ -180,6 +185,7 @@ class ClubController extends Controller
     {
         // Check membership before allowing renewal
         if (!$this->canModifyClub($request, $club)) {
+            $this->logResourceDenial($request, 'club', $club->id, 'renew');
             return response()->json(['message' => 'Unauthorized to renew this club'], 403);
         }
 

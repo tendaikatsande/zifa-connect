@@ -8,6 +8,7 @@ use App\Models\PlayerDocument;
 use App\Models\Registration;
 use App\Models\Invoice;
 use App\Services\RegistrationService;
+use App\Traits\LogsAuthorizationDenials;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Storage;
 
 class PlayerController extends Controller
 {
+    use LogsAuthorizationDenials;
     public function __construct(
         private RegistrationService $registrationService
     ) {}
@@ -136,6 +138,7 @@ class PlayerController extends Controller
     {
         // Check ownership/membership before allowing update
         if (!$this->canModifyPlayer($request, $player)) {
+            $this->logResourceDenial($request, 'player', $player->id, 'update');
             return response()->json(['message' => 'Unauthorized to modify this player'], 403);
         }
 
@@ -167,6 +170,7 @@ class PlayerController extends Controller
     {
         // Check ownership/membership before allowing delete
         if (!$this->canModifyPlayer($request, $player)) {
+            $this->logResourceDenial($request, 'player', $player->id, 'delete');
             return response()->json(['message' => 'Unauthorized to delete this player'], 403);
         }
 
@@ -183,6 +187,7 @@ class PlayerController extends Controller
     {
         // Check ownership/membership before allowing document upload
         if (!$this->canModifyPlayer($request, $player)) {
+            $this->logResourceDenial($request, 'player', $player->id, 'upload_document');
             return response()->json(['message' => 'Unauthorized to upload documents for this player'], 403);
         }
 
@@ -246,6 +251,7 @@ class PlayerController extends Controller
     {
         // Check ownership/membership before allowing submission
         if (!$this->canModifyPlayer($request, $player)) {
+            $this->logResourceDenial($request, 'player', $player->id, 'submit');
             return response()->json(['message' => 'Unauthorized to submit this player'], 403);
         }
 
