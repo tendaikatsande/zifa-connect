@@ -1,6 +1,6 @@
 import { Fragment, ReactNode } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { X } from 'lucide-react';
 
 interface ModalProps {
     isOpen: boolean;
@@ -66,7 +66,7 @@ export default function Modal({
                                             className="text-gray-400 hover:text-gray-500"
                                             onClick={onClose}
                                         >
-                                            <XMarkIcon className="h-6 w-6" />
+                                            <X className="h-6 w-6" />
                                         </button>
                                     </div>
                                 )}

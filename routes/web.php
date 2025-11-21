@@ -103,6 +103,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/profile', fn() => Inertia::render('Settings/Profile'))->name('profile');
         Route::get('/system', fn() => Inertia::render('Settings/System'))->name('system');
     });
+
+    // Fan Zone
+    Route::prefix('fan')->name('fan.')->group(function () {
+        // News
+        Route::get('/news', fn() => Inertia::render('Fan/News/Index'))->name('news.index');
+        Route::get('/news/create', fn() => Inertia::render('Fan/News/Create'))->name('news.create');
+        Route::get('/news/{news}', fn() => Inertia::render('Fan/News/Show'))->name('news.show');
+        Route::get('/news/{news}/edit', fn() => Inertia::render('Fan/News/Edit'))->name('news.edit');
+
+        // Polls
+        Route::get('/polls', fn() => Inertia::render('Fan/Polls/Index'))->name('polls.index');
+        Route::get('/polls/create', fn() => Inertia::render('Fan/Polls/Create'))->name('polls.create');
+        Route::get('/polls/{poll}', fn() => Inertia::render('Fan/Polls/Show'))->name('polls.show');
+
+        // Profile
+        Route::get('/profile', fn() => Inertia::render('Fan/Profile/Index'))->name('profile.index');
+        Route::get('/profile/create', fn() => Inertia::render('Fan/Profile/Create'))->name('profile.create');
+        Route::get('/profile/edit', fn() => Inertia::render('Fan/Profile/Edit'))->name('profile.edit');
+
+        // Leaderboard
+        Route::get('/leaderboard', fn() => Inertia::render('Fan/Leaderboard'))->name('leaderboard');
+    });
 });
 
 // Admin routes

@@ -7,7 +7,7 @@ import Button from '@/Components/ui/Button';
 import Input from '@/Components/ui/Input';
 import Select from '@/Components/ui/Select';
 import Badge, { getStatusVariant } from '@/Components/ui/Badge';
-import { MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { Search, Plus } from 'lucide-react';
 
 interface Club {
     id: number;
@@ -67,7 +67,7 @@ export default function ClubsIndex({ clubs, filters = {} }: ClubsIndexProps) {
                         </p>
                     </div>
                     <Button href="/clubs/create">
-                        <PlusIcon className="h-4 w-4 mr-2" />
+                        <Plus className="h-4 w-4 mr-2" />
                         Register Club
                     </Button>
                 </div>
@@ -77,7 +77,7 @@ export default function ClubsIndex({ clubs, filters = {} }: ClubsIndexProps) {
                         <div className="flex flex-col sm:flex-row gap-4">
                             <form onSubmit={handleSearch} className="flex-1">
                                 <div className="relative">
-                                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                                     <Input
                                         type="search"
                                         placeholder="Search by name..."

@@ -327,4 +327,66 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle:api'])->group(functio
         // Audit logs
         Route::get('/audit-logs', 'App\Http\Controllers\Api\AuditLogController@index');
     });
+
+    // ============================
+    // FAN FEATURES
+    // ============================
+
+    // Fan Profile
+    Route::prefix('fan')->group(function () {
+        // Profile management
+        Route::get('/profile', 'App\Http\Controllers\Api\FanProfileController@show');
+        Route::post('/profile', 'App\Http\Controllers\Api\FanProfileController@store');
+        Route::patch('/profile', 'App\Http\Controllers\Api\FanProfileController@update');
+
+        // Following clubs
+        Route::get('/following/clubs', 'App\Http\Controllers\Api\FanProfileController@followedClubs');
+        Route::post('/following/clubs', 'App\Http\Controllers\Api\FanProfileController@followClub');
+        Route::delete('/following/clubs/{clubId}', 'App\Http\Controllers\Api\FanProfileController@unfollowClub');
+
+        // Following players
+        Route::get('/following/players', 'App\Http\Controllers\Api\FanProfileController@followedPlayers');
+        Route::post('/following/players', 'App\Http\Controllers\Api\FanProfileController@followPlayer');
+        Route::delete('/following/players/{playerId}', 'App\Http\Controllers\Api\FanProfileController@unfollowPlayer');
+
+        // Match attendance
+        Route::get('/attendances', 'App\Http\Controllers\Api\FanProfileController@myAttendances');
+        Route::post('/attendances', 'App\Http\Controllers\Api\FanProfileController@registerAttendance');
+
+        // Leaderboard
+        Route::get('/leaderboard', 'App\Http\Controllers\Api\FanProfileController@leaderboard');
+    });
+
+    // Fan Polls
+    Route::prefix('polls')->group(function () {
+        Route::get('/', 'App\Http\Controllers\Api\FanPollController@index');
+        Route::get('/{fanPoll}', 'App\Http\Controllers\Api\FanPollController@show');
+        Route::get('/{fanPoll}/results', 'App\Http\Controllers\Api\FanPollController@results');
+        Route::post('/{fanPoll}/vote', 'App\Http\Controllers\Api\FanPollController@vote');
+    });
+
+    Route::middleware(['permission:polls.manage'])->group(function () {
+        Route::post('/polls', 'App\Http\Controllers\Api\FanPollController@store');
+        Route::patch('/polls/{fanPoll}', 'App\Http\Controllers\Api\FanPollController@update');
+        Route::delete('/polls/{fanPoll}', 'App\Http\Controllers\Api\FanPollController@destroy');
+    });
+
+    // Fan News
+    Route::prefix('news')->group(function () {
+        Route::get('/', 'App\Http\Controllers\Api\FanNewsController@index');
+        Route::get('/featured', 'App\Http\Controllers\Api\FanNewsController@featured');
+        Route::get('/latest', 'App\Http\Controllers\Api\FanNewsController@latest');
+        Route::get('/slug/{slug}', 'App\Http\Controllers\Api\FanNewsController@showBySlug');
+        Route::get('/{fanNews}', 'App\Http\Controllers\Api\FanNewsController@show');
+        Route::get('/{fanNews}/comments', 'App\Http\Controllers\Api\FanNewsController@comments');
+        Route::post('/{fanNews}/comments', 'App\Http\Controllers\Api\FanNewsController@addComment');
+        Route::post('/comments/{comment}/like', 'App\Http\Controllers\Api\FanNewsController@likeComment');
+    });
+
+    Route::middleware(['permission:news.manage'])->group(function () {
+        Route::post('/news', 'App\Http\Controllers\Api\FanNewsController@store');
+        Route::patch('/news/{fanNews}', 'App\Http\Controllers\Api\FanNewsController@update');
+        Route::delete('/news/{fanNews}', 'App\Http\Controllers\Api\FanNewsController@destroy');
+        Route::post('/news/comments/{comment}/moderate', 'App\Http\Controllers\Api\FanNewsController@moderateComment');
+    });
 });
