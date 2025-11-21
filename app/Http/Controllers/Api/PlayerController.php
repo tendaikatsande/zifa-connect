@@ -231,15 +231,16 @@ class PlayerController extends Controller
             $extension
         );
 
+        $disk = config('filesystems.documents_disk', 'public');
         $path = $file->storeAs(
             "players/{$player->id}/documents",
             $secureFilename,
-            'public'
+            $disk
         );
 
         $document = $player->documents()->create([
             'type' => $request->type,
-            'file_url' => Storage::url($path),
+            'file_url' => Storage::disk($disk)->url($path),
             'file_name' => $file->getClientOriginalName(),
             'file_size' => $file->getSize(),
         ]);

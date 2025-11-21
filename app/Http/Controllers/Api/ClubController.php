@@ -136,11 +136,12 @@ class ClubController extends Controller
             'file' => 'required|file|max:10240',
         ]);
 
-        $path = $request->file('file')->store("clubs/{$club->id}/documents", 'public');
+        $disk = config('filesystems.documents_disk', 'public');
+        $path = $request->file('file')->store("clubs/{$club->id}/documents", $disk);
 
         $document = $club->documents()->create([
             'type' => $request->type,
-            'file_url' => Storage::url($path),
+            'file_url' => Storage::disk($disk)->url($path),
             'file_name' => $request->file('file')->getClientOriginalName(),
             'file_size' => $request->file('file')->getSize(),
         ]);
