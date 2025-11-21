@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Services\PesepayService;
+use App\Traits\LogsAuthorizationDenials;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -13,12 +14,48 @@ use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
+    use LogsAuthorizationDenials;
+
     public function __construct(
         private PesepayService $pesepayService
     ) {}
 
+    /**
+     * Check if user can pay for this invoice
+     */
+    private function canPayInvoice(Request $request, Invoice $invoice): bool
+    {
+        $user = $request->user();
+
+        // Super admins and ZIFA admins can pay any invoice
+        if ($user->hasRole('super_admin') || $user->hasRole('zifa_admin') || $user->hasRole('zifa_finance')) {
+            return true;
+        }
+
+        // User is the invoice recipient
+        if ($invoice->issued_to_user_id === $user->id) {
+            return true;
+        }
+
+        // User is official of the invoiced club
+        if ($invoice->issued_to_club_id) {
+            return $user->clubs()
+                ->where('clubs.id', $invoice->issued_to_club_id)
+                ->wherePivot('status', 'active')
+                ->exists();
+        }
+
+        return false;
+    }
+
     public function initiate(Request $request, Invoice $invoice): JsonResponse
     {
+        // Verify user can pay for this invoice
+        if (!$this->canPayInvoice($request, $invoice)) {
+            $this->logResourceDenial($request, 'invoice', $invoice->id, 'initiate_payment');
+            return response()->json(['message' => 'Unauthorized to pay this invoice'], 403);
+        }
+
         if ($invoice->status === 'paid') {
             return response()->json(['message' => 'Invoice is already paid'], 422);
         }
@@ -76,8 +113,15 @@ class PaymentController extends Controller
         }
     }
 
-    public function status(Payment $payment): JsonResponse
+    public function status(Request $request, Payment $payment): JsonResponse
     {
+        // Verify user can view this payment
+        $invoice = $payment->invoice;
+        if ($invoice && !$this->canPayInvoice($request, $invoice)) {
+            $this->logResourceDenial($request, 'payment', $payment->id, 'view_status');
+            return response()->json(['message' => 'Unauthorized to view this payment'], 403);
+        }
+
         // Check with PesePay if still pending
         if ($payment->isPending()) {
             $status = $this->pesepayService->checkStatus($payment->gateway_reference);
